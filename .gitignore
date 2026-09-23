@@ -1,3 +1,8 @@
+# Directorios y ficheros a ignorar
+.vscode/
+private/
+sync.ffs_db
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[codz]
