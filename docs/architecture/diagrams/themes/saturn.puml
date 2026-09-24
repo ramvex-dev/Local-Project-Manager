@@ -1,0 +1,493 @@
+' ============================================================================
+' Tema centralizado — RectiXport v3.0  |  Software Knowledge Graph
+' ============================================================================
+' Estilo   : Oscuro moderno pastel — Blue-Gray pastel palette
+' Uso      : !include themes/puml-style.puml
+' NOTA     : sin @startuml / @enduml — es un fragmento incluible
+' ============================================================================
+'
+' ── Paleta ──────────────────────────────────────────────────────────────────
+'   Fondo global       #3a3a3a     Texto global        #f2f2f2
+'   Flechas            #9a791d     Título              #8a7a4a
+'
+'   Superficie L1      #2a3a4a     (oscuro, contenedores raíz)
+'   Superficie L2      #31404f     (medio-oscuro)
+'   Superficie L3      #3d4f60     (elementos principales)
+'   Superficie L4      #4a6b8a     (elementos interactivos)
+'   Superficie L5      #5c7a96     (énfasis suave)
+'
+'   Cyan    #5bb8d6   Blue    #7a9fd6
+'   Violet  #9a6bd6   Green   #359f75
+'   Purple  #b89ad6   Pink    #d68ab8
+'   Amber   #9a791d   (flechas, warn, raíz)
+'   Nota bg #1e3a2a   Nota fg #a8d8a8
+'
+' ── Cobertura de tipos de diagrama ──────────────────────────────────────────
+'   [skinparam]  class, package, component, interface, abstract, rectangle,
+'                actor, usecase, sequence, activity, state, database,
+'                queue, collection, frame, entity, note, arrow, title, legend
+'   [<style>]    mindmapDiagram, wbsDiagram, ganttDiagram, gitGraph,
+'                timingDiagram, jsonDiagram, yamlDiagram, salt
+' ============================================================================
+
+' ════════════════════════════════════════════════════════════════════════════
+' 1. SKINPARAM — Cubre diagramas clásicos (class, sequence, activity, etc.)
+' ════════════════════════════════════════════════════════════════════════════
+skinparam {
+
+  ' ── Global ─────────────────────────────────────────────────────────────
+  backgroundColor       #3a3a3a
+  defaultFontColor      #f2f2f2
+  defaultFontSize       12
+  defaultFontName       "Consolas"
+  shadowing             true
+
+  ' ── Título ─────────────────────────────────────────────────────────────
+  titleFontColor        #f2f2f2
+  titleFontSize         18
+  titleBackgroundColor  #2a3a4a
+  titleBorderColor      #8a7a4a
+  titleBorderThickness  1.5
+
+  ' ── Leyenda ────────────────────────────────────────────────────────────
+  legendBackgroundColor #2a3a4a
+  legendBorderColor     #5bb8d6
+  legendFontColor       #f2f2f2
+
+  ' ── Notas ──────────────────────────────────────────────────────────────
+  noteBackgroundColor   #1e3a2a
+  noteBorderColor       #359f75
+  noteFontColor         #a8d8a8
+  noteFontSize          10
+
+  ' ── Flechas ────────────────────────────────────────────────────────────
+  arrowColor            #9a791d
+  arrowFontColor        #C0E1FB
+  arrowThickness        1.5
+  ArrowFontSize         8
+
+  ' ── Clases ─────────────────────────────────────────────────────────────
+  classBackgroundColor      #3d4f60
+  classBorderColor          #7a9fd6
+  classBorderThickness      1.5
+  classArrowColor           #9a791d
+  classFontColor            #f2f2f2
+  classFontSize             12
+  classAttributeFontColor   #c8d8e8
+  classStereotypeFontColor  #b89ad6
+  classHeaderBackgroundColor #2a3a4a
+  
+  ' ── Packages ───────────────────────────────────────────────────────────
+  packageBackgroundColor    #2a3a4a
+  packageBorderColor        #359f75
+  packageBorderThickness    2
+  packageFontColor          #f2f2f2
+  packageFontSize           14
+  packageFontStyle          bold
+
+  ' ── Componentes ────────────────────────────────────────────────────────
+  componentBackgroundColor  #3d4f60
+  componentBorderColor      #5bb8d6
+  componentBorderThickness  1.5
+  componentFontColor        #f2f2f2
+  componentArrowColor       #9a791d
+
+  ' ── Interfaces ─────────────────────────────────────────────────────────
+  interfaceBackgroundColor  #2a1a4a
+  interfaceBorderColor      #9a6bd6
+  interfaceFontColor        #f2f2f2
+
+  ' ── Abstracts ──────────────────────────────────────────────────────────
+  abstractBackgroundColor   #3a1a4a
+  abstractBorderColor       #d68ab8
+  abstractFontColor         #f2f2f2
+
+  ' ── Enumeraciones ──────────────────────────────────────────────────────
+  enumBackgroundColor       #1e3a2a
+  enumBorderColor           #359f75
+  enumFontColor             #f2f2f2
+
+  ' ── Anotaciones ────────────────────────────────────────────────────────
+  annotationBackgroundColor #2a2a1a
+  annotationBorderColor     #9a791d
+  annotationFontColor       #f2f2f2
+
+  ' ── Rectángulos (C4-style / arquitectura) ──────────────────────────────
+  rectangleBackgroundColor  #3d4f60
+  rectangleBorderColor      #5bb8d6
+  rectangleBorderThickness  2
+  rectangleFontColor        #f2f2f2
+  rectangleRoundCorner      12
+
+  ' ── Actores ────────────────────────────────────────────────────────────
+  actorBackgroundColor  #31404f
+  actorBorderColor      #7a9fd6
+  actorFontColor        #f2f2f2
+  actorFontSize         14
+
+  ' ── Casos de uso ───────────────────────────────────────────────────────
+  usecaseBackgroundColor  #31404f
+  usecaseBorderColor      #7a9fd6
+  usecaseFontColor        #f2f2f2
+  usecaseArrowColor       #9a791d
+
+  ' ── Secuencias ─────────────────────────────────────────────────────────
+  sequenceArrowColor               #9a791d
+  sequenceArrowFontColor           #C0E1FB
+  sequenceArrowThickness           1.5
+  participantBackgroundColor       #31404f
+  participantBorderColor           #7a9fd6
+  participantFontColor             #f2f2f2
+  participantBorderThickness       1.5
+  activationBackgroundColor        #4a6b8a
+  activationBorderColor            #5bb8d6
+  sequenceGroupBackgroundColor     #2a3a4a
+  sequenceGroupBorderColor         #359f75
+  sequenceGroupFontColor           #f2f2f2
+  sequenceGroupBodyBackgroundColor #3a3a3a
+  sequenceDividerBackgroundColor   #2a3a4a
+  sequenceDividerFontColor         #9a791d
+  sequenceDividerBorderColor       #5bb8d6
+  sequenceReferenceBackgroundColor #2a3a4a
+  sequenceReferenceBorderColor     #359f75
+  sequenceLifeLineBorderColor      #5bb8d6
+  sequenceLifeLineBorderThickness  1
+
+  ' ── Actividades / Flujos ───────────────────────────────────────────────
+  activityBackgroundColor        #3d4f60
+  activityBorderColor            #7a9fd6
+  activityBorderThickness        1.5
+  activityFontColor              #f2f2f2
+  activityArrowColor             #9a791d
+  activityArrowFontColor         #C0E1FB
+  activityStartColor             #359f75
+  activityEndColor               #d68ab8
+  activityBarColor               #5bb8d6
+  activityDiamondBackgroundColor #3a1a4a
+  activityDiamondBorderColor     #d68ab8
+  activityDiamondFontColor       #f2f2f2
+  swimlaneBackgroundColor        #2a3a4a
+  swimlaneBorderColor            #5bb8d6
+  swimlaneFontColor              #f2f2f2
+  swimlaneTitleFontColor         #5bb8d6
+
+  ' ── Estados ────────────────────────────────────────────────────────────
+  stateBackgroundColor   #3d4f60
+  stateBorderColor       #7a9fd6
+  stateBorderThickness   1.5
+  stateFontColor         #f2f2f2
+  stateArrowColor        #9a791d
+  stateStartColor        #359f75
+  stateEndColor          #d68ab8
+  stateAttributeFontColor #c8d8e8
+
+  ' ── Database / Storage ─────────────────────────────────────────────────
+  databaseBackgroundColor  #31404f
+  databaseBorderColor      #9a6bd6
+  databaseFontColor        #f2f2f2
+
+  ' ── Queue / Collection ─────────────────────────────────────────────────
+  collectionBackgroundColor #31404f
+  collectionBorderColor     #359f75
+  collectionFontColor       #f2f2f2
+  queueBackgroundColor      #31404f
+  queueBorderColor          #359f75
+  queueFontColor            #f2f2f2
+
+  ' ── Frames / Groups ────────────────────────────────────────────────────
+  frameBackgroundColor  #2a3a4a
+  frameBorderColor      #5bb8d6
+  frameFontColor        #f2f2f2
+
+  ' ── Entities (ER) ──────────────────────────────────────────────────────
+  entityBackgroundColor  #3d4f60
+  entityBorderColor      #7a9fd6
+  entityFontColor        #f2f2f2
+
+  ' ── Storage (deploy) ───────────────────────────────────────────────────
+  storageBackgroundColor  #31404f
+  storageBorderColor      #9a6bd6
+  storageFontColor        #f2f2f2
+
+  ' ── Nodos / Artefactos (deploy) ────────────────────────────────────────
+  nodeBackgroundColor      #2a3a4a
+  nodeBorderColor          #5bb8d6
+  nodeFontColor            #f2f2f2
+  artifactBackgroundColor  #2a3a4a
+  artifactBorderColor      #5bb8d6
+  artifactFontColor        #f2f2f2
+  cloudBackgroundColor     #31404f
+  cloudBorderColor         #7a9fd6
+  cloudFontColor           #f2f2f2
+  boundaryBackgroundColor  #2a3a4a
+  boundaryBorderColor      #9a791d
+  boundaryFontColor        #f2f2f2
+
+  ' ── Control / Entity / Boundary (Robustness) ───────────────────────────
+  controlBackgroundColor  #3d4f60
+  controlBorderColor      #5bb8d6
+  controlFontColor        #f2f2f2
+}
+
+' ════════════════════════════════════════════════════════════════════════════
+' 2. ESTEREOTIPOS SEMÁNTICOS — Sobrescriben colores por rol de elemento
+' ════════════════════════════════════════════════════════════════════════════
+skinparam class {
+  BackgroundColor<<service>>      #1e3a2a
+  BorderColor<<service>>          #359f75
+  BackgroundColor<<config>>       #2a3320
+  BorderColor<<config>>           #9a791d
+  BackgroundColor<<util>>         #2a1a4a
+  BorderColor<<util>>             #9a6bd6
+  BackgroundColor<<scheduler>>    #3a1a3a
+  BorderColor<<scheduler>>        #d68ab8
+  BackgroundColor<<ui>>           #1a2a4a
+  BorderColor<<ui>>               #7a9fd6
+  BackgroundColor<<notification>> #2a3a4a
+  BorderColor<<notification>>     #5bb8d6
+  BackgroundColor<<external>>     #1a1a2a
+  BorderColor<<external>>         #b89ad6
+  BackgroundColor<<deprecated>>   #2a1a1a
+  BorderColor<<deprecated>>       #664444
+  FontColor<<deprecated>>         #886666
+}
+
+skinparam component {
+  BackgroundColor<<external>>  #1a1a2a
+  BorderColor<<external>>      #9a6bd6
+  BackgroundColor<<internal>>  #3d4f60
+  BorderColor<<internal>>      #5bb8d6
+  BackgroundColor<<legacy>>    #2a1a1a
+  BorderColor<<legacy>>        #664444
+}
+
+' ════════════════════════════════════════════════════════════════════════════
+' 3.  <style> — Cubre los tipos modernos que ignoran skinparam:
+'     mindmapDiagram, wbsDiagram, ganttDiagram, gitGraph,
+'     timingDiagram, jsonDiagram, yamlDiagram, salt
+' ════════════════════════════════════════════════════════════════════════════
+<style>
+
+' ── Estilos globales (herencia base) ────────────────────────────────────────
+root {
+  BackgroundColor #3a3a3a
+  FontColor       #f2f2f2
+  FontSize        12
+  FontName        Consolas
+}
+
+' ── MindMap ─────────────────────────────────────────────────────────────────
+mindmapDiagram {
+  BackgroundColor #3a3a3a
+  arrow {
+    color           #9a791d
+    thickness       1.5
+    FontSize        8
+  }
+  rootNode {
+    BackgroundColor #2a3a4a
+    BorderColor     #9a791d
+    BorderThickness 2
+    FontColor       #9a791d
+    FontSize        14
+    FontStyle       bold
+    Padding         12
+    RoundCorner     8
+  }
+  node {
+    BackgroundColor #243040
+    BorderColor     #7a9fd6
+    BorderThickness 1.3
+    FontColor       #f2f2f2
+    FontSize        11
+    Padding         10
+    RoundCorner     6
+  }
+  :depth(1) {
+    BackgroundColor #243040
+    BorderColor     #7a9fd6
+    FontColor       #f2f2f2
+  }
+  :depth(2) {
+    BackgroundColor #1e2d3d
+    BorderColor     #359f75
+    FontColor       #f2f2f2
+  }
+  :depth(3) {
+    BackgroundColor #1a2535
+    BorderColor     #9a6bd6
+    FontColor       #f2f2f2
+  }
+  :depth(4) {
+    BackgroundColor #16202e
+    BorderColor     #d68ab8
+    FontColor       #f2f2f2
+  }
+  :depth(5) {
+    BackgroundColor #121a28
+    BorderColor     #5bb8d6
+    FontColor       #c8d8e8
+  }
+}
+
+' ── WBS ─────────────────────────────────────────────────────────────────────
+wbsDiagram {
+  BackgroundColor #3a3a3a
+  arrow {
+    color           #9a791d
+    thickness       1.5
+  }
+  rootNode {
+    BackgroundColor #2a3a4a
+    BorderColor     #9a791d
+    BorderThickness 2
+    FontColor       #9a791d
+    FontSize        12
+    FontStyle       bold
+    Padding         8
+    RoundCorner     8
+  }
+  node {
+    BackgroundColor #243040
+    BorderColor     #7a9fd6
+    BorderThickness 1.5
+    FontColor       #f2f2f2
+    FontSize        10
+    Padding         8
+    RoundCorner     6
+  }
+  :depth(1) {
+    BackgroundColor #243040
+    BorderColor     #7a9fd6
+    FontColor       #f2f2f2
+  }
+  :depth(2) {
+    BackgroundColor #1e2d3d
+    BorderColor     #359f75
+    FontColor       #f2f2f2
+  }
+  :depth(3) {
+    BackgroundColor #1a2535
+    BorderColor     #9a6bd6
+    FontColor       #f2f2f2
+  }
+  :depth(4) {
+    BackgroundColor #16202e
+    BorderColor     #d68ab8
+    FontColor       #f2f2f2
+  }
+  :depth(5) {
+    BackgroundColor #121a28
+    BorderColor     #5bb8d6
+    FontColor       #c8d8e8
+  }
+}
+
+' ── Gantt ────────────────────────────────────────────────────────────────────
+ganttDiagram {
+  BackgroundColor    #3a3a3a
+  FontColor          #f2f2f2
+  FontSize           11
+  task {
+    BackgroundColor  #3d4f60
+    BorderColor      #7a9fd6
+    FontColor        #f2f2f2
+  }
+  milestone {
+    BackgroundColor  #9a791d
+    BorderColor      #8a7a4a
+    FontColor        #3a3a3a
+  }
+  separator {
+    BackgroundColor  #2a3a4a
+    BorderColor      #5bb8d6
+    FontColor        #5bb8d6
+  }
+  timeline {
+    BackgroundColor  #2a3a4a
+    FontColor        #f2f2f2
+  }
+  closed {
+    BackgroundColor  #2a1a1a
+    FontColor        #886666
+  }
+}
+
+' ── Git Graph ────────────────────────────────────────────────────────────────
+gitDiagram {
+  BackgroundColor  #3a3a3a
+  branch {
+    LineColor      #7a9fd6
+    LineWidth      2
+  }
+  commit {
+    BackgroundColor #4a6b8a
+    BorderColor     #7a9fd6
+    FontColor       #f2f2f2
+    FontSize        10
+  }
+  tag {
+    BackgroundColor #9a791d
+    FontColor       #3a3a3a
+    FontSize        10
+  }
+  arrow {
+    color     #9a791d
+    thickness 1.5
+  }
+}
+
+' ── Timing ───────────────────────────────────────────────────────────────────
+timingDiagram {
+  BackgroundColor  #3a3a3a
+  FontColor        #f2f2f2
+  FontSize         11
+  clock {
+    BackgroundColor #3d4f60
+    BorderColor     #7a9fd6
+  }
+  signal {
+    BackgroundColor #243040
+    BorderColor     #359f75
+    FontColor       #f2f2f2
+  }
+}
+
+' ── JSON ─────────────────────────────────────────────────────────────────────
+jsonDiagram {
+  BackgroundColor  #3a3a3a
+  FontColor        #f2f2f2
+  FontSize         11
+  node {
+    BackgroundColor #243040
+    BorderColor     #7a9fd6
+    FontColor       #f2f2f2
+  }
+  highlight {
+    BackgroundColor #2a3a4a
+    FontColor       #9a791d
+    FontStyle       bold
+  }
+  arrow {
+    color     #9a791d
+    thickness 1.5
+  }
+}
+
+' ── YAML ─────────────────────────────────────────────────────────────────────
+yamlDiagram {
+  BackgroundColor  #3a3a3a
+  FontColor        #f2f2f2
+  FontSize         11
+  node {
+    BackgroundColor #243040
+    BorderColor     #359f75
+    FontColor       #f2f2f2
+  }
+  arrow {
+    color     #9a791d
+    thickness 1.5
+  }
+}
+
+</style>

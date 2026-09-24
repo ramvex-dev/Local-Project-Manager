@@ -1,0 +1,84 @@
+@startuml Flow Diagram
+
+!include themes/saturn.puml
+!include themes/layers.puml
+
+skinparam shadowing false
+skinparam linetype ortho
+skinparam activityBackgroundColor #F8FAFC
+skinparam activityBorderColor #0F172A
+skinparam activityFontColor #0F172A
+skinparam activityDiamondBackgroundColor #E2E8F0
+skinparam activityDiamondBorderColor #334155
+
+title Diagrama de Flujo: `lpm project new`
+
+start
+
+$L_INTERFAZ:Developer ejecuta `lpm project new`
+(o elige "Nuevo proyecto" en el menú);
+
+$L_SOPORTE:Resolver ruta del workspace
+(--workspace o directorio actual);
+
+if (Existe .workspace.yaml y valida?) then (si)
+    $L_PERSISTENCIA:Cargar Workspace
+    (catálogo, obsoletos, patrón de rutas);
+else (no)
+    $L_INTERFAZ:Error: ruta no gestionada.
+    Sugerir `lpm workspace create`;
+    stop
+endif
+
+$L_INTERFAZ:Listar layouts del directorio .layouts
+y elegir uno (por defecto base);
+
+$L_INTERFAZ:Formulario guiado con valores vigentes
+(name, category, type, status, priority,
+language, framework, tags, repo, depends_on);
+
+$L_SOPORTE:Generar slug desde name;
+
+$L_SERVICIOS:Validar Project contra Workspace
+(slug único, tipo según categoría,
+valores vigentes, dependencias sin ciclos);
+
+if (Validación correcta?) then (si)
+    $L_PERSISTENCIA:Resolver ruta con el patrón
+    (ej. web/backend/auth-service);
+
+    if (Clonar repositorio remoto?) then (si)
+        $L_SOPORTE:git clone <url> en la ruta destino
+        y rellenar repo;
+        $L_CASOS_USO:No materializar el layout
+        sobre el clon;
+    else (no)
+        $L_SERVICIOS:Crear directorio del proyecto;
+        $L_SERVICIOS:Materializar layout:
+        directorios y archivos con
+        marcadores sustituidos;
+        if (layout.init_git?) then (si)
+            $L_SOPORTE:git init;
+        endif
+    endif
+
+    $L_PERSISTENCIA:Escribir .project.json
+    (escritura atómica);
+
+    $L_REPORTES:Rebuild de meta/:
+    global-index, category-index
+    y ficha del proyecto;
+
+    $L_INTERFAZ:Mostrar resumen: slug, ruta,
+    layout usado y avisos;
+    stop
+else (no)
+    $L_INTERFAZ:Mostrar todos los errores
+    y volver al formulario
+    sin escribir nada;
+    stop
+endif
+
+$legend_capas_claro()
+
+@enduml

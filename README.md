@@ -1,7 +1,7 @@
 # Local Project Manager
 
-> **Estado: Pre-Alpha / en desarrollo.** 
-Local Project Manager (`lpm`) es una herramienta de línea de comandos, escrita en Python, para mantener ordenados todos los proyectos de desarrollo que una persona tiene en su máquina.
+> **Estado: Pre-Alpha / en desarrollo.**
+> Local Project Manager (`lpm`) es una herramienta de línea de comandos, escrita en Python, para mantener ordenados todos los proyectos de desarrollo que una persona tiene en su máquina.
 
 ## Para qué sirve
 
@@ -80,7 +80,7 @@ Al crear un workspace se elige un catálogo global, se copia a `.workspace.yaml`
 web/backend/auth-service/
 │                       # layout base
 ├── .project.json       # manifiesto del proyecto
-├── README.md            
+├── README.md
 ├── CHANGELOG.md
 ├── .gitignore
 ├── src/
@@ -109,6 +109,72 @@ Las plantillas no viven dentro de ningún workspace. Residen en `~/.local_projec
 
 El identificador de cada plantilla es el nombre de su archivo. No representa una versión: `web-projects.yaml` y `personal.yaml` son dos catálogos distintos.
 
+## Uso de la CLI
+
+```sh
+uv sync                 # crea el entorno e instala dependencias y grupo dev
+uv run pytest -q        # tests
+uv run ruff check .     # lint
+uv run mypy             # tipado
+```
+
+Sin argumentos, `lpm` abre un menú interactivo con las mismas operaciones. Toda operación sobre un workspace acepta `--workspace <ruta>`; sin ella se usa el directorio actual.
+
+```sh
+# Workspace
+lpm workspace create                          # elige catálogo y patrón de rutas, crea la estructura
+lpm workspace rebuild                         # regenera meta/ completo
+lpm workspace catalog add languages kotlin    # añade un valor al catálogo del workspace
+lpm workspace catalog remove languages ruby   # lo elimina, o lo marca obsoleto si algún proyecto lo usa
+lpm workspace catalog review                  # reconcilia los obsoletos con el uso real
+lpm workspace layout create --from base       # crea un layout propio a partir de otro
+
+# Proyectos
+lpm project new                               # asistente: layout, datos, validación, materialización
+lpm project register ./web/backend/mi-repo    # registra un proyecto existente (solo escribe .project.json)
+lpm project list --category web --status in_progress
+lpm project search auth
+lpm project edit auth-service                 # slug, category y type no son editables aquí
+lpm project move auth-service --category shared --type library
+lpm project delete auth-service               # con confirmación obligatoria
+
+# Plantillas globales (no requieren workspace)
+lpm catalog create --from base                # nuevo catálogo custom
+lpm layout list
+```
+
+> Interfaz objetivo descrita en [docs/architecture/08-interfaz-cli.md](docs/architecture/08-interfaz-cli.md); los comandos se van habilitando fase a fase.
+
+## Documentación del proyecto
+
+- [Contexto, requisitos y reglas de negocio](docs/architecture/01-contexto-y-objetivos.md): RF y RN del sistema completo.
+- [Estrategia de solución](docs/architecture/02-estrategia-solucion.md): capas, responsabilidades por módulo y flujos principales.
+- [Vista de bloques](docs/architecture/03-vista-bloques.md): almacén global, workspace, proyecto generado, paquete y reportes de `meta/`.
+- [Conceptos transversales](docs/architecture/04-conceptos-transversales.md): catálogo frente a layout, copias del workspace, obsoletos, patrón de rutas, marcadores y validación.
+- [Stack tecnológico](docs/architecture/05-stack-tecnologico.md): tecnologías y motivos de elección.
+- [Modelo de dominio y contratos de datos](docs/architecture/06-modelo-de-dominio.md): las cuatro clases y sus archivos.
+- [Plantillas base](docs/architecture/07-plantillas-base.md): contenido del catálogo y del layout base.
+- [Interfaz CLI](docs/architecture/08-interfaz-cli.md): subcomandos y menú interactivo.
+- [Diagramas](docs/architecture/diagrams): clases, objetos, componentes, paquetes, flujo y secuencia en PlantUML.
+- [Plan de implementación](docs/planning/plan-implementacion.md) y [kanban](docs/planning/kanban-implementacion.md): fases, dependencias y criterios de cierre.
+
+La documentación de arquitectura explica qué debe hacer el sistema; el plan y el kanban indican cuándo y cómo verificar cada entrega.
+
+> Se ha hecho uso de Copilot para la generación de la documentación y diagramas bajo la supervisión y corrección manual del autor.
+
+## Stack tecnológico
+
+| Capa                | Tecnologías                                                                                                                                                                                                                                                       |
+| ------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Lenguaje            | Python 3.11 o superior                                                                                                                                                                                                                                            |
+| Ejecución           | [Typer](https://typer.tiangolo.com/) (subcomandos), [Rich](https://rich.readthedocs.io/) (menú, formularios y tablas), [Jinja2](https://jinja.palletsprojects.com/) (Markdown de `meta/`), [PyYAML](https://pyyaml.org/) (catálogos, layouts y `.workspace.yaml`) |
+| Biblioteca estándar | `pathlib`, `dataclasses`, `json`, `tempfile`, `shutil`, `subprocess`, `importlib.resources`, entre otros                                                                                                                                                          |
+| Desarrollo          | [uv](https://docs.astral.sh/uv/), hatchling, pytest, pytest-cov, Ruff, mypy, pre-commit                                                                                                                                                                           |
+| Requisito externo   | Git disponible en el `PATH` para `git init` y `git clone`                                                                                                                                                                                                         |
+
+Los modelos son `dataclasses` con validación explícita.
+Qué hace cada tecnología y por qué se eligió: [docs/architecture/05-stack-tecnologico.md](docs/architecture/05-stack-tecnologico.md).
+
 ## Licencia
 
-MPL-2.0 — ver [LICENSE](LICENSE). Historial de cambios en [CHANGELOG.md](CHANGELOG.md).
+MIT License — ver [LICENSE](LICENSE). Historial de cambios en [CHANGELOG.md](CHANGELOG.md).

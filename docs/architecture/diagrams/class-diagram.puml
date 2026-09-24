@@ -1,0 +1,194 @@
+@startuml Class Diagram
+
+!include themes/saturn.puml
+!include themes/layers.puml
+
+skinparam classAttributeIconSize 0
+
+title Diagrama de Clases: dominio, persistencia y servicios
+
+caption Cuatro clases de dominio, una por archivo persistente. Dataclasses planas: no conocen rutas, YAML ni JSON (RN-304). Project es plano en memoria y anidado en .project.json (tabla BLOCKS).
+
+package "local_project_manager.models" $C_DOMINIO {
+    class Catalog {
+        + schema_version : str
+        + catalog_id : str
+        + name : str
+        + description : str
+        + statuses : dict[str, str]
+        + priorities : dict[str, str]
+        + categories : list[str]
+        + types_by_category : dict[str, list[str]]
+        + languages : list[str]
+        + frameworks_by_language : dict[str, list[str]]
+        + default_tags_by_type : dict[str, list[str]]
+    }
+
+    class Workspace {
+        + schema_version : str
+        + workspace_id : str
+        + name : str
+        + created_at : str
+        + updated_at : str
+        + source_catalog_id : str
+        + project_path_pattern : str
+        + catalog : Catalog
+        + obsolete_values : ObsoleteValues
+    }
+
+    class ProjectLayout {
+        + schema_version : str
+        + layout_id : str
+        + name : str
+        + description : str
+        + directories : list[str]
+        + files : dict[str, str]
+        + init_git : bool
+    }
+
+    class Project {
+        + manifest_version : str
+        + name : str
+        + slug : str
+        + category : str
+        + type : str
+        + status : str
+        + priority : str
+        + language : str
+        + language_version : str
+        + framework : str
+        + framework_version : str
+        + database : str
+        + description : str
+        + tags : list[str]
+        + repo : str
+        + notes : str
+        + created : str
+        + modified : str
+        + archived_at : str
+        + depends_on : list[str]
+        __
+        + to_dict() : dict
+        + {static} from_dict(data : dict) : Project
+    }
+
+    note right of Project
+        BLOCKS: raíz, identity, classification,
+        classification.stack, state, metadata,
+        dates, relations.
+    end note
+}
+
+package "local_project_manager.storage" $C_PERSISTENCIA {
+    class CatalogStore {
+        + list() : list[str]
+        + load(catalog_id : str) : Catalog
+        + save(catalog : Catalog) : void
+        + delete(catalog_id : str) : void
+        + ensure_base() : void
+    }
+
+    class LayoutStore {
+        + list_global() : list[str]
+        + list_workspace(root : Path) : list[str]
+        + load_global(layout_id : str) : ProjectLayout
+        + load_workspace(root : Path, layout_id : str) : ProjectLayout
+        + save_global(layout : ProjectLayout) : void
+        + save_workspace(root : Path, layout : ProjectLayout) : void
+        + delete_global(layout_id : str) : void
+        + delete_workspace(root : Path, layout_id : str) : void
+        + ensure_base() : void
+    }
+
+    class WorkspaceStore {
+        + exists(root : Path) : bool
+        + load(root : Path) : Workspace
+        + save(root : Path, workspace : Workspace) : void
+    }
+
+    class ProjectStore {
+        + load(path : Path) : Project
+        + save(path : Path, project : Project) : void
+        + delete(path : Path) : void
+        + scan(root : Path) : list[Project]
+        + resolve_path(root : Path, workspace : Workspace, project : Project) : Path
+    }
+
+    class atomic <<module>> {
+        + write_text(path : Path, content : str) : void
+    }
+
+    note bottom of atomic
+        Todos los stores escriben a través de atomic
+        (temporal + os.replace, RN-402).
+    end note
+}
+
+package "local_project_manager.services" $C_SERVICIOS {
+    class CatalogValidator {
+        + validate(catalog : Catalog) : list[str]
+    }
+
+    class LayoutValidator {
+        + validate(layout : ProjectLayout) : list[str]
+    }
+
+    class ProjectValidator {
+        + validate(project : Project, workspace : Workspace, others : list[Project]) : list[str]
+    }
+
+    class ObsoleteService {
+        + remove(workspace : Workspace, projects : list[Project], field : str, value : str) : Workspace
+        + restore(workspace : Workspace, field : str, value : str) : Workspace
+        + review(workspace : Workspace, projects : list[Project]) : ReviewReport
+    }
+
+    class ScaffoldService {
+        + create_category_dirs(root : Path, workspace : Workspace) : void
+        + materialize(layout : ProjectLayout, project : Project, target : Path) : void
+    }
+
+    class RebuildService {
+        + run(root : Path, workspace : Workspace) : void
+    }
+}
+
+package "local_project_manager.reports" $C_REPORTES {
+    class MetaIO {
+        - env : Environment
+        __
+        + render_global_index(workspace : Workspace, projects : list[Project], output : Path) : void
+        + render_category_index(workspace : Workspace, category : str, projects : list[Project], output : Path) : void
+        + render_project_doc(workspace : Workspace, project : Project, output : Path) : void
+    }
+}
+
+' Relaciones del dominio
+Workspace *-- Catalog : "1 copia independiente"
+Workspace ..> ProjectLayout : "dispone de 1..*\n(.layouts/, no embebidos)"
+Project ..> Workspace : "se valida contra\ncatalog + obsolete_values"
+Project ..> ProjectLayout : "se materializa con\nuno elegido en new"
+
+' Persistencia
+CatalogStore ..> Catalog : "<<persists>>"
+LayoutStore ..> ProjectLayout : "<<persists>>"
+WorkspaceStore ..> Workspace : "<<persists>>"
+ProjectStore ..> Project : "<<persists>>"
+
+' Servicios
+CatalogValidator ..> Catalog
+LayoutValidator ..> ProjectLayout
+ProjectValidator ..> Project
+ProjectValidator ..> Workspace
+ObsoleteService ..> Workspace
+ObsoleteService ..> Project : "comprueba uso"
+ScaffoldService ..> ProjectLayout
+ScaffoldService ..> Workspace : "patrón de rutas"
+RebuildService ..> ProjectStore : "scan()"
+RebuildService ..> MetaIO
+MetaIO ..> Project : "<<reads>>"
+MetaIO ..> Workspace : "etiquetas y obsoletos"
+
+$legend_capas("bottom")
+
+@enduml

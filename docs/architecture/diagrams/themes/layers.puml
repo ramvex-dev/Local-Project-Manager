@@ -1,0 +1,71 @@
+' ============================================================================
+' Capas de local_project_manager: paleta y leyenda compartidas
+' ============================================================================
+' Uso: !include themes/layers.puml  (después de saturn.puml)
+'   - $C_<CAPA>  : color de fondo + borde para diagramas oscuros (class, component,
+'                  package, sequence). Se escribe tal cual tras el elemento:
+'                  package "Servicios" as S $C_SERVICIOS
+'   - $L_<CAPA>  : tinte claro para el diagrama de flujo (fondo claro, texto oscuro):
+'                  $L_SERVICIOS:Validar Project;
+'   - $legend_capas("bottom")        leyenda para diagramas oscuros (posición opcional)
+'   - $legend_capas_claro()          leyenda para el diagrama de flujo
+' NOTA: sin @startuml / @enduml — es un fragmento incluible
+' ============================================================================
+
+' ── Diagramas oscuros: fondo (tinte oscuro) ; borde (color vivo de saturn) ──
+!$C_INTERFAZ     = "#1f6f86;line:5bb8d6"
+!$C_CASOS_USO    = "#3b5a99;line:7a9fd6"
+!$C_SERVICIOS    = "#5e3f8f;line:9a6bd6"
+!$C_DOMINIO      = "#256b4f;line:359f75"
+!$C_PERSISTENCIA = "#8a4a73;line:d68ab8"
+!$C_REPORTES     = "#6e5a8a;line:b89ad6"
+!$C_SOPORTE      = "#4a5a6a;line:8fa3b5"
+!$C_FILESYSTEM   = "#6a5a2a;line:9a791d"
+
+' ── Solo fondo, para leyenda y celdas ──
+!$B_INTERFAZ     = "#1f6f86"
+!$B_CASOS_USO    = "#3b5a99"
+!$B_SERVICIOS    = "#5e3f8f"
+!$B_DOMINIO      = "#256b4f"
+!$B_PERSISTENCIA = "#8a4a73"
+!$B_REPORTES     = "#6e5a8a"
+!$B_SOPORTE      = "#4a5a6a"
+!$B_FILESYSTEM   = "#6a5a2a"
+
+' ── Diagrama de flujo (fondo claro, texto oscuro) ──
+!$L_INTERFAZ     = "#d3ecf4"
+!$L_CASOS_USO    = "#dde5f6"
+!$L_SERVICIOS    = "#e7dcf5"
+!$L_DOMINIO      = "#d5efe3"
+!$L_PERSISTENCIA = "#f5dcea"
+!$L_REPORTES     = "#ebe3f5"
+!$L_SOPORTE      = "#e3e8ec"
+!$L_FILESYSTEM   = "#f0e8cf"
+
+!procedure $legend_capas($pos="right")
+legend $pos
+|= |= Capa |= Paquetes |
+|<$B_INTERFAZ>      | Interfaz            | cli.py, __main__.py, ui/ |
+|<$B_CASOS_USO>     | Casos de uso        | commands/ |
+|<$B_SERVICIOS>     | Servicios           | services/ |
+|<$B_DOMINIO>       | Dominio             | models.py |
+|<$B_PERSISTENCIA>  | Persistencia        | storage/ |
+|<$B_REPORTES>      | Reportes            | reports/ |
+|<$B_SOPORTE>       | Soporte             | config.py, constants.py, utils/, resources/ |
+|<$B_FILESYSTEM>    | Sistema de archivos | workspace y almacén global (externo) |
+endlegend
+!endprocedure
+
+!procedure $legend_capas_claro($pos="right")
+legend $pos
+|= |= Capa |= Paquetes |
+|<$L_INTERFAZ>      | Interfaz            | cli.py, ui/ |
+|<$L_CASOS_USO>     | Casos de uso        | commands/ |
+|<$L_SERVICIOS>     | Servicios           | services/ |
+|<$L_DOMINIO>       | Dominio             | models.py |
+|<$L_PERSISTENCIA>  | Persistencia        | storage/ |
+|<$L_REPORTES>      | Reportes            | reports/ |
+|<$L_SOPORTE>       | Soporte             | config.py, utils/ |
+|<$L_FILESYSTEM>    | Sistema de archivos | disco |
+endlegend
+!endprocedure

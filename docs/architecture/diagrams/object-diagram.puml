@@ -1,0 +1,91 @@
+@startuml Object Diagram
+
+!include themes/saturn.puml
+
+title Diagrama de Objetos: workspace "dev" con un proyecto creado desde el layout base
+
+note as Legend
+  Instancias en memoria tras `project new`.
+  El catálogo del workspace es una copia del global "base";
+  `ruby` sigue en languages porque un proyecto lo usa, pero está obsoleto.
+end note
+
+object "ws: Workspace" as W {
+    schema_version = "1.0"
+    workspace_id = "ws-7f3a2c"
+    name = "dev"
+    created_at = "2026-09-21"
+    updated_at = "2026-09-21"
+    source_catalog_id = "base"
+    project_path_pattern = "{category}/{type}/{slug}"
+    catalog = wsCatalog
+    obsolete_values = {"statuses": [], "priorities": [], "categories": [], "types_by_category": {}, "languages": ["ruby"], "frameworks_by_language": {}, "default_tags_by_type": {}}
+}
+
+object "wsCatalog: Catalog" as C {
+    schema_version = "1.0"
+    catalog_id = "base"
+    name = "Catálogo base"
+    description = "Vocabulario inicial de Local Project Manager"
+    statuses = {"todo": "Pendiente de iniciar", "in_progress": "En desarrollo activo", "done": "Completado / en producción", "paused": "Pausado temporalmente", "archived": "Archivado / sin mantenimiento"}
+    priorities = {"critical": "Bloquea otros proyectos", "high": "Importante, próximo a completar", "medium": "Progreso normal", "low": "Baja prioridad, puede esperar", "none": "Sin prioridad asignada"}
+    categories = ["web", "mobile", "archive"]
+    types_by_category = {"web": ["backend", "frontend", "fullstack"], "mobile": ["native", "flutter", "react-native"], "archive": []}
+    languages = ["python", "typescript", "ruby"]
+    frameworks_by_language = {"python": ["django", "fastapi", "flask", "typer"], "typescript": ["react", "nextjs", "angular", "nestjs"]}
+    default_tags_by_type = {"backend": ["api", "rest", "auth", "crud"], "frontend": ["spa", "dashboard", "form", "responsive"]}
+}
+
+object "baseLayout: ProjectLayout" as L {
+    schema_version = "1.0"
+    layout_id = "base"
+    name = "Layout base"
+    description = "Estructura mínima común a cualquier proyecto"
+    directories = ["src", "docs", "test"]
+    files = {"README.md": "# {name} ...", "CHANGELOG.md": "# Changelog ...", ".gitignore": ".venv/ __pycache__/ ..."}
+    init_git = false
+}
+
+object "authProject: Project" as P {
+    manifest_version = "1.0"
+    name = "Auth Service"
+    slug = "auth-service"
+    category = "web"
+    type = "backend"
+    status = "in_progress"
+    priority = "high"
+    language = "python"
+    language_version = "3.12"
+    framework = "fastapi"
+    framework_version = "0.110"
+    database = "postgresql"
+    description = "Microservicio de autenticación JWT"
+    tags = ["auth", "jwt"]
+    repo = ""
+    notes = ""
+    created = "2026-09-21"
+    modified = ""
+    archived_at = ""
+    depends_on = []
+}
+
+object "legacyProject: Project" as P2 {
+    manifest_version = "1.0"
+    name = "Old Rails App"
+    slug = "old-rails-app"
+    category = "archive"
+    type = ""
+    status = "archived"
+    priority = "none"
+    language = "ruby"
+    created = "2024-03-10"
+    archived_at = "2026-01-15"
+}
+
+W *-- C : "copia de templates/catalogs/base.yaml"
+W ..> L : ".layouts/base.yaml"
+P ..> W : "validado contra wsCatalog\nruta: web/backend/auth-service/"
+P ..> L : "materializado con baseLayout"
+P2 ..> W : "usa ruby (obsoleto): válido,\nno se ofrece a proyectos nuevos\nruta: archive/old-rails-app/"
+
+@enduml

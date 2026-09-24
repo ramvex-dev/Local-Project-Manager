@@ -1,0 +1,101 @@
+@startuml Workspace Structure
+
+!include themes/saturn.puml
+
+skinparam shadowing false
+skinparam roundcorner 20
+skinparam rectangle {
+    BorderThickness 1.5
+    FontSize 14
+}
+skinparam ArrowColor #9a791d
+skinparam ArrowFontColor #C0E1FB
+skinparam ArrowFontSize 12
+skinparam defaultTextAlignment center
+skinparam note {
+    FontSize 12
+    BorderThickness 1.5
+    TextAlignment left
+}
+
+title 🗂️  Anatomía de un Workspace — Local Project Manager
+
+rectangle {
+
+    ' ── Franja de flujo: de dónde sale cada pieza y a dónde va ─────────────────
+    rectangle "🌐 Almacén global\n\n~/.local_project_manager/\ncatálogos y layouts base" as Global #4a3f2a
+    rectangle "📁 Workspace\n\n.workspace.yaml + .layouts/\nvocabulario y patrón de rutas" as WS #31404f
+    rectangle "📦 Proyecto\n\n<category>/<type>/<slug>/\n.project.json = fuente de verdad" as Proj #3d4f60
+    rectangle "📊 meta/\n\níndices y fichas derivadas" as Meta #1e3a2a
+
+    Global -[#9a791d]-> WS : copia inicial
+    WS -[#9a791d]-> Proj : "project new"\nmaterializa layout
+    Proj -[#9a791d]-> Meta : "rebuild"\nderiva índices
+
+
+
+    ' ── Tarjetas de metadatos, una por pieza clave, coloreadas igual que arriba ─
+    note right of [WS] #31404f
+    <b>📋 .workspace.yaml guarda</b>
+
+    • identity: workspace_id, name
+    • routing: project_path_pattern
+    • catalog: statuses, priorities,
+    categories, types, languages,
+    frameworks, tags
+    • lifecycle: created_at, updated_at
+    • obsolete_values: valores retirados
+    end note
+
+    ' ── Árbol físico, para entender la estructura de un vistazo ────────────────
+    note right of [WS] #31404f
+    <b>Estructura física de ejemplo</b>
+
+    📁 <workspace>/
+    ├─ 📄 .workspace.yaml
+    ├─ 📁 .layouts/
+    │   ├─ 📄 base.yaml
+    │   └─ 📄 python-package.yaml
+    ├─ 📁 web/backend/auth-service/
+    │   ├─ 📄 .project.json
+    │   ├─ 📁 src/  📁 docs/
+    │   └─ 📄 README.md
+    └─ 📁 meta/
+    ├─ 📄 global-index.md
+    └─ 📁 category/web/
+    ├─ 📄 category-index.md
+    └─ 📄 auth-service.md
+    end note
+
+    note right of [Proj] #3d4f60
+    <b>🧾 .project.json guarda</b>
+
+    • identity: name, slug
+    • classification: category, type, stack
+    • state: status, priority
+    • metadata: description, tags, repo, notes
+    • dates + relations: created, modified,
+    depends_on
+    end note
+
+    note right of [Meta] #1e3a2a
+    <b>📊 meta/ es siempre derivado</b>
+
+    • global-index.md: resumen del workspace
+    • category-index.md: por categoría
+    • una ficha por proyecto (auth-service.md)
+
+    Se regenera completo con "rebuild".
+    Nunca se edita a mano.
+    end note
+}
+
+legend right
+|= Color |= Significado |
+| <back:#4a3f2a>   </back> | Almacén global (origen, no se sincroniza) |
+| <back:#31404f>   </back> | Workspace: configuración y catálogo |
+| <back:#3d4f60>   </back> | Proyecto: fuente de verdad |
+| <back:#1e3a2a>   </back> | meta/: derivado y regenerable |
+endlegend
+
+@enduml

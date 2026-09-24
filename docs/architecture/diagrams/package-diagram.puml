@@ -1,0 +1,103 @@
+@startuml Package Diagram
+
+!include themes/saturn.puml
+!include themes/layers.puml
+
+skinparam componentStyle rectangle
+skinparam linetype ortho
+skinparam nodesep 30
+skinparam ranksep 60
+skinparam packagePadding 15
+
+title Diagrama de Paquetes: local_project_manager
+
+note as ScopeNote
+  Dependencias permitidas entre paquetes.
+  Ningún paquete depende de commands/ ni de ui/ salvo cli.
+  models no depende de nadie; storage es el único que toca disco.
+end note
+
+package "local_project_manager" as Entry $C_INTERFAZ {
+    [__main__ / cli] as CLI
+}
+
+package "local_project_manager.ui" as UI $C_INTERFAZ {
+    [menu] as Menu
+    [prompts] as Prompts
+}
+
+package "local_project_manager.commands" as CMD $C_CASOS_USO {
+    [workspace] as CmdWorkspace
+    [project] as CmdProject
+    [catalog] as CmdCatalog
+    [layout] as CmdLayout
+}
+
+package "local_project_manager.services" as SERVICES $C_SERVICIOS {
+    [catalog_validator] as CatalogValidator
+    [layout_validator] as LayoutValidator
+    [project_validator] as ProjectValidator
+    [obsolete_service] as ObsoleteService
+    [scaffold_service] as ScaffoldService
+    [rebuild_service] as RebuildService
+}
+
+package "local_project_manager.storage" as STORAGE $C_PERSISTENCIA {
+    [catalog_store] as CatalogStore
+    [layout_store] as LayoutStore
+    [workspace_store] as WorkspaceStore
+    [project_store] as ProjectStore
+    [atomic] as Atomic
+}
+
+package "local_project_manager.reports" as REPORTS $C_REPORTES {
+    [meta_io] as MetaIO
+    [templates/*.j2] as Templates
+}
+
+package "local_project_manager.utils" as UTILS $C_SOPORTE {
+    [slug] as Slug
+    [dates] as Dates
+    [git] as Git
+}
+
+package "local_project_manager (core)" as CORE $C_SOPORTE {
+    [config] as Config
+    [constants] as Constants
+}
+
+package "local_project_manager.models" as MODELS $C_DOMINIO {
+    [models] as Models
+}
+
+package "local_project_manager.resources" as RESOURCES $C_SOPORTE {
+    [catalogs/base.yaml] as BaseCatalog
+    [layouts/base.yaml] as BaseLayout
+}
+
+' --- Relaciones agrupadas por paquete ---
+CLI --> UI : "<<invoke>>"
+CLI --> CMD : "<<invoke>>"
+UI --> CMD : "<<invoke>>"
+UI --> CORE : "<<use>>"
+CMD --> SERVICES : "<<use>>"
+CMD --> STORAGE : "<<use>>"
+CMD --> UTILS : "<<use>>"
+CMD --> CORE : "<<use>>"
+SERVICES --> STORAGE : "<<use>>"
+SERVICES --> REPORTS : "<<use>>"
+SERVICES --> UTILS : "<<use>>"
+SERVICES --> CORE : "<<use>>"
+REPORTS --> CORE : "<<use>>"
+STORAGE --> CORE : "<<use>>"
+STORAGE --> RESOURCES : "<<read>>"
+UTILS --> CORE : "<<use>>"
+UI --> MODELS : "<<use>>"
+CMD --> MODELS : "<<use>>"
+SERVICES --> MODELS : "<<use>>"
+REPORTS --> MODELS : "<<use>>"
+STORAGE --> MODELS : "<<use>>"
+
+$legend_capas()
+
+@enduml

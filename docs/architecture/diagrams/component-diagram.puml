@@ -1,0 +1,119 @@
+@startuml Component Diagram
+
+!include themes/saturn.puml
+!include themes/layers.puml
+
+skinparam componentStyle rectangle
+skinparam linetype ortho
+skinparam nodesep 30
+skinparam ranksep 60
+skinparam packagePadding 15
+
+title Diagrama de Componentes: local_project_manager CLI
+
+note as ScopeNote
+  Diseño completo, sin fases.
+  Grupos de subcomandos: workspace, project, catalog, layout.
+  Sin argumentos, `lpm` abre el menú interactivo sobre las mismas funciones.
+end note
+
+actor "Usuario / Developer" as User
+
+package "Interfaz" as Entry $C_INTERFAZ {
+    [__main__.py / cli.py] as CLI
+    [ui/menu.py\nui/prompts.py] as UI
+}
+
+package "Casos de uso (commands/)" as Commands $C_CASOS_USO {
+    [workspace.py] as CmdWorkspace
+    [project.py] as CmdProject
+    [catalog.py] as CmdCatalog
+    [layout.py] as CmdLayout
+}
+
+package "Servicios (services/)" as Services $C_SERVICIOS {
+    [catalog_validator.py\nlayout_validator.py\nproject_validator.py] as Validators
+    [obsolete_service.py] as Obsolete
+    [scaffold_service.py] as Scaffold
+    [rebuild_service.py] as Rebuild
+}
+
+package "Persistencia (storage/)" as Storage $C_PERSISTENCIA {
+    [catalog_store.py] as CatalogStore
+    [layout_store.py] as LayoutStore
+    [workspace_store.py] as WorkspaceStore
+    [project_store.py] as ProjectStore
+    [atomic.py] as Atomic
+}
+
+package "Reportes (reports/)" as Reports $C_REPORTES {
+    [meta_io.py + templates/*.j2] as MetaIO
+}
+
+package "Dominio (models.py)" as Domain $C_DOMINIO {
+    [Catalog / Workspace\nProjectLayout / Project] as Models
+}
+
+package "Soporte" as Support $C_SOPORTE {
+    [config.py / constants.py] as Core
+    [utils/slug.py / dates.py] as Utils
+    [utils/git.py] as Git
+    [resources/catalogs/base.yaml\nresources/layouts/base.yaml] as Resources
+}
+
+note bottom of Storage
+  atomic: temporal + os.replace (RN-402)
+  stores: PyYAML / json, devuelven modelos, nunca dicts
+end note
+
+note bottom of Reports
+  Jinja2 solo aquí. Los layouts usan
+  marcadores {name}, {slug}... con str.format_map.
+end note
+
+package "File System (Workspace)" as FileSystem $C_FILESYSTEM {
+    [.workspace.yaml\n(Workspace + Catalog + obsoletos)] as WorkspaceFile
+    [.layouts/*.yaml\n(ProjectLayout)] as WorkspaceLayouts
+    [<pattern>/<slug>/\n(código + .project.json)] as Projects
+    [meta/\n(derivado)] as Metadata
+}
+
+package "File System (Almacén global del CLI)" as GlobalStore $C_FILESYSTEM {
+    [templates/catalogs/\nbase.yaml + custom/*.yaml] as GlobalCatalogs
+    [templates/layouts/\nbase.yaml + custom/*.yaml] as GlobalLayouts
+}
+
+' --- Flujo principal ---
+User --> CLI
+CLI --> UI : "menú / formularios"
+CLI --> Commands : "subcomandos"
+UI --> Commands
+
+' Relaciones agrupadas entre capas
+Commands --> Services : "valida, reconcilia,\nmaterializa, reconstruye"
+Commands --> Storage : "carga / guarda"
+Commands --> Support : "rutas, slugs, git"
+Services --> Storage : "scan, resolve_path"
+Rebuild --> Reports : "renderiza"
+Storage --> Models : "construye"
+Services --> Models : "valida"
+Reports --> Models : "lee"
+Storage --> Resources : "semillas base"
+
+' Persistencia hacia disco
+CatalogStore --> GlobalCatalogs
+LayoutStore --> GlobalLayouts
+LayoutStore --> WorkspaceLayouts
+WorkspaceStore --> WorkspaceFile
+ProjectStore --> Projects
+Reports --> Metadata : "regenera atómico"
+
+' Detalle que aporta
+Scaffold --> Projects : "materializa layout\ncrea dirs de categorías"
+Git --> Projects : "git init / clone"
+CmdWorkspace --> WorkspaceFile : "create: copia catálogo global"
+CmdWorkspace --> WorkspaceLayouts : "create: copia layout base"
+
+$legend_capas()
+
+@enduml

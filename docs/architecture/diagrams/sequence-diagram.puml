@@ -1,0 +1,139 @@
+@startuml Sequence Diagram
+
+!include themes/saturn.puml
+!include themes/layers.puml
+
+autonumber
+skinparam maxMessageSize 150
+skinparam sequenceMessageAlign center
+
+title Diagrama de Secuencia: `lpm project new` con layout base
+
+actor "Developer" as User
+participant "CLI\n(cli.py)" as CLI $B_INTERFAZ
+participant "project.new\n(commands/project.py)" as CmdNew $B_CASOS_USO
+participant "Config\n(config.py)" as Config $B_SOPORTE
+participant "WorkspaceStore\n(storage/workspace_store.py)" as WsStore $B_PERSISTENCIA
+participant "LayoutStore\n(storage/layout_store.py)" as LayoutStore $B_PERSISTENCIA
+participant "Prompts\n(ui/prompts.py)" as Prompts $B_INTERFAZ
+participant "ProjectStore\n(storage/project_store.py)" as ProjStore $B_PERSISTENCIA
+participant "ProjectValidator\n(services/project_validator.py)" as Validator $B_SERVICIOS
+participant "ScaffoldService\n(services/scaffold_service.py)" as Scaffold $B_SERVICIOS
+participant "Git\n(utils/git.py)" as Git $B_SOPORTE
+participant "RebuildService\n(services/rebuild_service.py)" as Rebuild $B_SERVICIOS
+participant "MetaIO\n(reports/meta_io.py)" as MetaIO $B_REPORTES
+database "File System" as FS $B_FILESYSTEM
+
+User -> CLI: `lpm project new [--workspace <ruta>]`
+activate CLI
+CLI -> CmdNew: new(workspace_path, layout_id)
+activate CmdNew
+
+group 1. Abrir el workspace (RF-103)
+    CmdNew -> Config: resolve_workspace(workspace_path)
+    activate Config
+    Config --> CmdNew: root
+    deactivate Config
+
+    CmdNew -> WsStore: load(root)
+    activate WsStore
+    WsStore -> FS: lee .workspace.yaml
+    WsStore --> CmdNew: workspace (Catalog + obsolete_values + patrón)
+    deactivate WsStore
+    note right of WsStore: Si falta o no valida,\nla ruta no es un workspace\ngestionado: error y fin.
+end
+
+group 2. Elegir layout (RF-201)
+    CmdNew -> LayoutStore: list_workspace(root)
+    activate LayoutStore
+    LayoutStore -> FS: lee .layouts/*.yaml
+    LayoutStore --> CmdNew: ["base", "python-package"]
+    deactivate LayoutStore
+
+    CmdNew -> Prompts: choose_layout(ids)
+    activate Prompts
+    Prompts -> User: selección
+    User --> Prompts: "base"
+    Prompts --> CmdNew: "base"
+    deactivate Prompts
+
+    CmdNew -> LayoutStore: load_workspace(root, "base")
+    activate LayoutStore
+    LayoutStore --> CmdNew: layout
+    deactivate LayoutStore
+end
+
+group 3. Formulario y validación
+    CmdNew -> ProjStore: scan(root)
+    activate ProjStore
+    ProjStore -> FS: lee todos los .project.json
+    ProjStore --> CmdNew: existing_projects
+    deactivate ProjStore
+
+    CmdNew -> Prompts: ask_project(workspace, existing_projects)
+    activate Prompts
+    Prompts -> User: name, category, type, status,\npriority, language, framework, tags...
+    note right of Prompts: Ofrece solo valores vigentes:\ncatalog menos obsolete_values (RF-403).
+    User --> Prompts: respuestas
+    Prompts --> CmdNew: project (slug generado desde name)
+    deactivate Prompts
+
+    CmdNew -> Validator: validate(project, workspace, existing_projects)
+    activate Validator
+    Validator --> CmdNew: errors = []
+    deactivate Validator
+    note right of Validator: Con errores, Prompts los muestra\ntodos y vuelve al formulario.
+end
+
+group 4. Materialización
+    CmdNew -> ProjStore: resolve_path(root, workspace, project)
+    activate ProjStore
+    ProjStore --> CmdNew: root/web/backend/auth-service
+    deactivate ProjStore
+
+    CmdNew -> Scaffold: materialize(layout, project, target)
+    activate Scaffold
+    Scaffold -> FS: crea src/, docs/, test/
+    Scaffold -> FS: escribe README.md, CHANGELOG.md, .gitignore\n(marcadores sustituidos)
+    alt layout.init_git
+        Scaffold -> Git: init(target)
+        activate Git
+        Git -> FS: git init
+        Git --> Scaffold: ok
+        deactivate Git
+    end
+    Scaffold --> CmdNew: ok
+    deactivate Scaffold
+
+    CmdNew -> ProjStore: save(target / ".project.json", project)
+    activate ProjStore
+    ProjStore -> FS: escritura atómica de .project.json\n(to_dict() anidado por BLOCKS)
+    ProjStore --> CmdNew: ok
+    deactivate ProjStore
+end
+
+group 5. Rebuild automático (RN-401)
+    CmdNew -> Rebuild: run(root, workspace)
+    activate Rebuild
+    Rebuild -> ProjStore: scan(root)
+    activate ProjStore
+    ProjStore --> Rebuild: projects
+    deactivate ProjStore
+    Rebuild -> MetaIO: render_global_index / render_category_index / render_project_doc
+    activate MetaIO
+    MetaIO -> FS: regenera meta/ en temporal y lo intercambia
+    note right of MetaIO: Etiquetas desde workspace.catalog;\nvalores obsoletos marcados.
+    MetaIO --> Rebuild: done
+    deactivate MetaIO
+    Rebuild --> CmdNew: ok
+    deactivate Rebuild
+end
+
+CmdNew --> CLI: exit 0
+deactivate CmdNew
+CLI --> User: "Proyecto auth-service creado en web/backend/auth-service"
+deactivate CLI
+
+$legend_capas()
+
+@enduml

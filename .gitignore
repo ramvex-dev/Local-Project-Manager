@@ -1,7 +1,7 @@
 # Directorios y ficheros a ignorar
+sync.ffs_db
 .vscode/
 private/
-sync.ffs_db
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
